@@ -14,6 +14,13 @@ config = 'config/quartznet12x1_abcfjwz.yaml'
 encoder_checkpoint = 'model_vn/JasperEncoder-STEP-1312684.pt'
 decoder_checkpoint = 'model_vn/JasperDecoderForCTC-STEP-1312684.pt'
 
+### EN chạy test file infer_en.py
+#config_en = 'model_en/quartznet15x5.yaml'
+#encoder_checkpoint_en = 'model_en/JasperEncoder-STEP-247400.pt'
+#decoder_checkpoint_en = 'model_en/JasperDecoderForCTC-STEP-247400.pt'
+#neural_factory_en = restore_model(config_en, encoder_checkpoint_en, decoder_checkpoint_en)
+### END EN
+
 neural_factory = restore_model(config, encoder_checkpoint, decoder_checkpoint)
 print('========= load model checkpoint done!')
 
