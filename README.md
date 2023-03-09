@@ -53,35 +53,3 @@ rawSound, samplerate = sf.read(io.BytesIO(request.data)) \
 rawSound = rawSound.transpose() \
 sig_raw = librosa.to_mono(rawSound) \
 sig_raw = librosa.resample(y, samplerate, 16000)
-
-## Xử lý real-time
-Phần xử lý chuyển đổi streaming realtime và kiến trúc của Module <br/>
-
-0. Software Structure
-
-- Partition: Code quản lý các thread theo nhiều partition.
-- Mỗi partition chứa nhiều thread để xử lý.
-- Số lượng thread trong partition có thể mở rộng theo từng thời điểm, vd lúc nhiều luồng sẽ có 100 thread, không có luồng sẽ không có thread chạy.
-- Mỗi thread cần config được xử lý bao nhiêu luồng audio, khuyền nghị thực tế là 10 luồng.
-
-1. Tiền xử lý luồng.
-
-- Xử lý đa luồng cần phải chia mỗi luồng audio vào một thread để nhất quán khi chuyển đổi.
-- Mỗi thread sẽ kiểm tra đủ điều kiện để gửi nhận diện hay chưa dựa vào số byte gửi lên và thời gian của dữ liệu trong thread.
-- Nếu đủ điều kiện thì nhận diện và clear data trong luồng, ngược lại thì tiếp tục chờ đủ điều kiện
-
-## Server 64G RAM, 500GB SSD, CPU 16 CORE
-Chạy module với 20 partition, mỗi partition có 30 thread, mỗi thread xử lý 10 kênh audio. \
-= 20 * 30 * 10 = 6.000 luồng audio, hết ~8GB RAM \
-5 Server python sử dụng GPU, chạy docker, mỗi Server docker scale 10 đầu api = 50 đầu nhận diện.
-
-*** Sau khi xử lý xong các luồng mà không có dữ liệu thì tự động đóng thread và remove partition để không lãng phí RAM do các thread sống.
-
-## Java. Flow.Subscriber và reactive programing
-Lập trình reactive được phát triển bởi các kỹ sư trong netflix đầu tiên, sau đó được thêm vào java9 \
-Nên sử dụng gói java.util.concurrent.Flow.Subscriber của java9 xử lý pub-sub để không bị block main thread. \
-Để tránh việc gọi sang python thì nên build model của keras sau đó dùng dl4j import từ keras vào là chạy được.
-
-## Java 16 đến 18 Loom có thể mở được được lớn hơn 1.000.000 thread để xử lý các job
-Để làm được việc này thì java loom đưa ra khái niệm thread ảo dựa trên thuật toán ăn cắp công việc (work-steal) \
-Thuật toán này dựa trên mô mình map-reduce để thực hiện hai tác vụ Fock - Join.
